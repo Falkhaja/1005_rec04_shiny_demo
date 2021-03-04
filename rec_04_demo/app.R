@@ -28,17 +28,17 @@ ui <- navbarPage(
     tabsetPanel(
         tabPanel("Interactivity",
                  fluidPage(
-                     titlePanel("Qscores Data"),
+                     titlePanel("Trains Data"),
                      sidebarLayout(
                          sidebarPanel(
                              selectInput(
                                  "var_plot",
                                  "Choose a Response Category",
-                                 choices = c("Enrollment" = "enrollment", 
-                                   "Workload per Week" = "hours")
+                                 choices = c("Treatment" = "Treated", 
+                                   "Control " = "Control")
                              ),
                              width = 300),
-                         plotOutput("line_plot",
+                         plotOutput("trains_plot",
                                     width = 550,
                                     height = 500)))),
         
@@ -130,6 +130,28 @@ server <- function(input, output) {
     
     # for the 3rd map    
     # ggsave("img01.png", plot = last_plot())
+        
+    })
+    
+    output$trains_plot <- renderPlot({
+        ifelse(input$var_plot == "Treated",
+               z <- "Treated",
+               z <- "Control")
+        
+        ifelse(input$var_plot == "Treated",
+               title <- "Attitude Change in Treated Group",
+               title <- "Attitude Change in Control Group")
+        
+        trains %>%
+            mutate(att_net = att_end - att_start) %>%
+            filter(treatment == z) %>%
+            ggplot(mapping = aes(x = party, y = att_net)) +
+            geom_boxplot() +
+            labs(x = "Party",
+                 y = "Attitude Change",
+                 title = title,
+                 subtitle = "Bigger range in Democrat Attitude change")
+        
         
     })
     
